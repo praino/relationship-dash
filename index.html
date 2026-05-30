@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Relationship Dashboard</title>
+<style>
+:root{
+  --bg:#08080a;--card:#15151a;--card2:#1f1f27;--text:#f7f7f8;--muted:#a1a1aa;
+  --line:#2d2d36;--accent:#38bdf8;--green:#22c55e;--yellow:#f59e0b;--red:#ef4444;
+}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,#08080a,#111117);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding-bottom:88px}
+header{max-width:860px;margin:auto;padding:26px 18px 8px}
+h1{margin:0;font-size:32px;letter-spacing:-.06em}
+.sub{color:var(--muted);font-size:14px;margin-top:4px}
+main{max-width:860px;margin:auto;padding:10px 14px}
+.card{background:rgba(21,21,26,.94);border:1px solid var(--line);border-radius:26px;padding:18px;margin-bottom:14px;box-shadow:0 12px 30px rgba(0,0,0,.25)}
+h2{font-size:20px;margin:0 0 14px;letter-spacing:-.04em}
+input,select,textarea{width:100%;border:1px solid var(--line);background:#0f0f14;color:var(--text);border-radius:16px;padding:14px;font-size:16px;margin-bottom:10px}
+textarea{min-height:80px}
+button{width:100%;border:0;border-radius:16px;background:var(--accent);color:#061018;padding:14px;font-size:16px;font-weight:850;margin-top:8px}
+button.secondary{background:var(--card2);color:var(--text)}
+button.danger{background:#3b1111;color:#fecaca}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.metric{background:var(--card2);border:1px solid var(--line);border-radius:20px;padding:14px}
+.big{font-size:34px;font-weight:900;letter-spacing:-.06em}
+.muted{color:var(--muted);font-size:13px}
+.item{background:#101014;border:1px solid var(--line);border-radius:20px;padding:14px;margin-bottom:10px}
+.item strong{display:block;margin-bottom:4px}
+.pill{display:inline-block;background:#292932;color:var(--muted);padding:5px 9px;border-radius:999px;font-size:12px;margin:4px 4px 0 0}
+.bar{height:10px;background:#292932;border-radius:999px;overflow:hidden;margin-top:8px}
+.fill{height:100%;border-radius:999px;background:var(--accent)}
+nav{position:fixed;bottom:0;left:0;right:0;background:#0d0d11;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding:8px 8px 18px}
+nav button{background:transparent;color:var(--muted);font-size:12px;padding:10px 4px;margin:0;border-radius:14px}
+nav button.active{background:var(--accent);color:#061018}
+.hidden{display:none}
+.scoreGood{color:var(--green)}.scoreWarn{color:var(--yellow)}.scoreBad{color:var(--red)}
+</style>
+</head>
+<body>
+<header>
+  <h1>Relationship Dashboard</h1>
+  <div class="sub">Show up for the people who matter.</div>
+</header>
+
+<main>
+<section id="dashboard" class="tab">
+  <div class="card">
+    <h2>Relationship Health</h2>
+    <div class="big" id="healthScore">—</div>
+    <div class="bar"><div class="fill" id="healthFill"></div></div>
+  </div>
+
+  <div class="card">
+    <h2>Needs Attention</h2>
+    <div id="attentionList"></div>
+  </div>
+
+  <div class="card">
+    <h2>Upcoming Dates</h2>
+    <div id="upcomingList"></div>
+  </div>
+
+  <div class="card">
+    <h2>Suggested Reach Outs</h2>
+    <div id="suggestedList"></div>
+  </div>
+</section>
+
+<section id="people" class="tab hidden">
+  <div class="card">
+    <h2>Add Person</h2>
+    <input id="personName" placeholder="Name" />
+    <select id="personCategory">
+      <option>Family</option>
+      <option>Friend</option>
+      <option>Mentor</option>
+      <option>Professional</option>
+      <option>Other</option>
+    </select>
+    <select id="personImportance">
+      <option value="5">Importance 5 — Core</option>
+      <option value="4">Importance 4 — Very important</option>
+      <option value="3">Importance 3 — Important</option>
+      <option value="2">Importance 2 — Maintain</option>
+      <option value="1">Importance 1 — Low touch</option>
+    </select>
+    <select id="personFrequency">
+      <option value="7">Weekly</option>
+      <option value="14">Every 2 weeks</option>
+      <option value="30">Monthly</option>
+      <option value="90">Quarterly</option>
+    </select>
+    <input id="personBirthday" type="date" />
+    <textarea id="personNotes" placeholder="Notes, preferences, things to remember"></textarea>
+    <button onclick="addPerson()">Add Person</button>
+  </div>
+
+  <div class="card">
+    <h2>People</h2>
+    <div id="peopleList"></div>
+  </div>
+</section>
+
+<section id="log" class="tab hidden">
+  <div class="card">
+    <h2>Log Interaction</h2>
+    <select id="logPerson"></select>
+    <input id="logDate" type="date" />
+    <select id="logType">
+      <option>Call</option>
+      <option>Text</option>
+      <option>In Person</option>
+      <option>Video</option>
+      <option>Email</option>
+      <option>Other</option>
+    </select>
+    <select id="logEnergy">
+      <option value="2">+2 Energizing</option>
+      <option value="1">+1 Positive</option>
+      <option value="0">0 Neutral</option>
+      <option value="-1">-1 Draining</option>
+      <option value="-2">-2 Exhausting</option>
+    </select>
+    <textarea id="logNotes" placeholder="What did you talk about? Anything to remember?"></textarea>
+    <button onclick="addInteraction()">Save Interaction</button>
+  </div>
+
+  <div class="card">
+    <h2>Recent Activity</h2>
+    <div id="activityList"></div>
+  </div>
+</section>
+
+<section id="reports" class="tab hidden">
+  <div class="card">
+    <h2>Portfolio</h2>
+    <div id="portfolioList"></div>
+  </div>
+
+  <div class="card">
+    <h2>Most Neglected</h2>
+    <div id="neglectedList"></div>
+  </div>
+
+  <div class="card">
+    <h2>Backup</h2>
+    <button class="secondary" onclick="exportData()">Export JSON</button>
+    <textarea id="backup" placeholder="Export/import data here"></textarea>
+    <button class="secondary" onclick="importData()">Import JSON</button>
+    <button class="danger" onclick="clearAll()">Clear All</button>
+  </div>
+</section>
+</main>
+
+<nav>
+  <button class="active" onclick="showTab('dashboard',this)">Dashboard</button>
+  <button onclick="showTab('people',this)">People</button>
+  <button onclick="showTab('log',this)">Log</button>
+  <button onclick="showTab('reports',this)">Reports</button>
+</nav>
+
+<script>
+const KEY="relationshipDashboardV1";
+let data=JSON.parse(localStorage.getItem(KEY))||{people:[],interactions:[]};
+
+function today(){return new Date().toISOString().slice(0,10)}
+function id(){return Date.now().toString(36)+Math.random().toString(36).slice(2)}
+logDate.value=today();
+
+function save(){localStorage.setItem(KEY,JSON.stringify(data));render()}
+
+function showTab(id,btn){
+  document.querySelectorAll(".tab").forEach(t=>t.classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
+  document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  render();
+}
+
+function addPerson(){
+  if(!personName.value.trim())return;
+  data.people.push({
+    id:id(),
+    name:personName.value.trim(),
+    category:personCategory.value,
+    importance:+personImportance.value,
+    frequency:+personFrequency.value,
+    birthday:personBirthday.value,
+    notes:personNotes.value.trim()
+  });
+  personName.value=""; personBirthday.value=""; personNotes.value="";
+  save();
+}
+
+function addInteraction(){
+  if(!logPerson.value)return;
+  data.interactions.push({
+    id:id(),
+    personId:logPerson.value,
+    date:logDate.value,
+    type:logType.value,
+    energy:+logEnergy.value,
+    notes:logNotes.value.trim()
+  });
+  logNotes.value="";
+  save();
+}
+
+function lastContact(personId){
+  return data.interactions.filter(x=>x.personId===personId).sort((a,b)=>b.date.localeCompare(a.date))[0];
+}
+
+function daysSince(date){
+  if(!date)return 999;
+  return Math.floor((new Date(today())-new Date(date))/(1000*60*60*24));
+}
+
+function personScore(p){
+  const last=lastContact(p.id);
+  const days=last?daysSince(last.date):999;
+  const recency=Math.max(0,100-(days/p.frequency)*100);
+  return Math.round(recency);
+}
+
+function weightedHealth(){
+  if(!data.people.length)return 0;
+  let totalWeight=0, total=0;
+  data.people.forEach(p=>{
+    totalWeight+=p.importance;
+    total+=personScore(p)*p.importance;
+  });
+  return Math.round(total/totalWeight);
+}
+
+function render(){
+  const health=weightedHealth();
+  healthScore.textContent=data.people.length?health+"%":"—";
+  healthScore.className="big "+(health>=75?"scoreGood":health>=45?"scoreWarn":"scoreBad");
+  healthFill.style.width=health+"%";
+
+  renderPeople();
+  renderLogOptions();
+  renderDashboard();
+  renderActivity();
+  renderReports();
+}
+
+function renderDashboard(){
+  const ranked=[...data.people].sort((a,b)=>personScore(a)-personScore(b));
+  const attention=ranked.filter(p=>personScore(p)<70).slice(0,5);
+
+  attentionList.innerHTML=attention.length?attention.map(p=>{
+    const last=lastContact(p.id);
+    const d=last?daysSince(last.date):"Never";
+    return `<div class="item"><strong>${esc(p.name)}</strong><div class="muted">${d} days since contact · Target every ${p.frequency} days</div></div>`;
+  }).join(""):`<div class="muted">No relationships need attention.</div>`;
+
+  suggestedList.innerHTML=ranked.slice(0,3).map(p=>
+    `<div class="item"><strong>${esc(p.name)}</strong><div class="muted">Recommended: reach out this week</div></div>`
+  ).join("") || `<div class="muted">Add people to get suggestions.</div>`;
+
+  const upcoming=data.people.filter(p=>p.birthday).map(p=>{
+    const next=nextDate(p.birthday);
+    return {...p,daysUntil:daysSince(today())*-1 + Math.ceil((new Date(next)-new Date(today()))/(1000*60*60*24)),next};
+  }).sort((a,b)=>a.daysUntil-b.daysUntil).slice(0,5);
+
+  upcomingList.innerHTML=upcoming.length?upcoming.map(p=>
+    `<div class="item"><strong>${esc(p.name)}</strong><div class="muted">${p.daysUntil} days · ${p.next}</div></div>`
+  ).join(""):`<div class="muted">No upcoming dates yet.</div>`;
+}
+
+function nextDate(dateStr){
+  const now=new Date(today());
+  const d=new Date(dateStr);
+  let next=new Date(now.getFullYear(),d.getMonth(),d.getDate());
+  if(next<now)next=new Date(now.getFullYear()+1,d.getMonth(),d.getDate());
+  return next.toISOString().slice(0,10);
+}
+
+function renderPeople(){
+  peopleList.innerHTML=data.people.length?data.people.map(p=>{
+    const last=lastContact(p.id);
+    const d=last?daysSince(last.date):"Never";
+    const score=personScore(p);
+    return `<div class="item">
+      <strong>${esc(p.name)}</strong>
+      <span class="pill">${p.category}</span>
+      <span class="pill">Importance ${p.importance}</span>
+      <span class="pill">Score ${score}%</span>
+      <div class="muted" style="margin-top:8px">Last contact: ${last?last.date:"Never"} · ${d} days</div>
+      ${p.notes?`<div class="muted">Notes: ${esc(p.notes)}</div>`:""}
+      <button class="danger" onclick="removePerson('${p.id}')">Delete</button>
+    </div>`;
+  }).join(""):`<div class="muted">No people yet.</div>`;
+}
+
+function renderLogOptions(){
+  logPerson.innerHTML=data.people.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join("");
+}
+
+function renderActivity(){
+  const recent=[...data.interactions].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,10);
+  activityList.innerHTML=recent.length?recent.map(i=>{
+    const p=data.people.find(x=>x.id===i.personId);
+    return `<div class="item">
+      <strong>${esc(p?p.name:"Unknown")}</strong>
+      <span class="pill">${i.type}</span>
+      <span class="pill">Energy ${i.energy>0?"+":""}${i.energy}</span>
+      <div class="muted">${i.date}</div>
+      ${i.notes?`<div class="muted">${esc(i.notes)}</div>`:""}
+    </div>`;
+  }).join(""):`<div class="muted">No interactions logged yet.</div>`;
+}
+
+function renderReports(){
+  const cats=["Family","Friend","Mentor","Professional","Other"];
+  portfolioList.innerHTML=cats.map(cat=>{
+    const people=data.people.filter(p=>p.category===cat);
+    if(!people.length)return "";
+    const avg=Math.round(people.reduce((s,p)=>s+personScore(p),0)/people.length);
+    return `<div class="item"><strong>${cat}</strong><div class="big">${avg}%</div><div class="bar"><div class="fill" style="width:${avg}%"></div></div></div>`;
+  }).join("") || `<div class="muted">Add people to see portfolio reports.</div>`;
+
+  neglectedList.innerHTML=[...data.people].sort((a,b)=>personScore(a)-personScore(b)).slice(0,8).map(p=>{
+    const last=lastContact(p.id);
+    const d=last?daysSince(last.date):"Never";
+    return `<div class="item"><strong>${esc(p.name)}</strong><div class="muted">${d} days since contact · Score ${personScore(p)}%</div></div>`;
+  }).join("") || `<div class="muted">No data yet.</div>`;
+}
+
+function removePerson(pid){
+  if(!confirm("Delete this person and their interactions?"))return;
+  data.people=data.people.filter(p=>p.id!==pid);
+  data.interactions=data.interactions.filter(i=>i.personId!==pid);
+  save();
+}
+
+function exportData(){backup.value=JSON.stringify(data,null,2)}
+function importData(){try{data=JSON.parse(backup.value);save()}catch(e){alert("Invalid JSON")}}
+function clearAll(){if(confirm("Clear all data?")){data={people:[],interactions:[]};save()}}
+function esc(s){return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+
+render();
+</script>
+</body>
+</html>
